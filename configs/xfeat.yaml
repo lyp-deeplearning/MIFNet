@@ -1,0 +1,16 @@
+PREDICT:
+  device: cuda
+  model_image_width: 768
+  model_image_height: 768
+  use_matching_trick: True
+  detection_threshold: 0.01
+  nms_radius: 5
+  max_num_keypoints: 1024
+  scale: 8
+  visulize: True
+STABLE:
+  img_size: 768
+  t: 0
+  up_ft_index: 1
+  ensemble_size: 8
+
