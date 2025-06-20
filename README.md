@@ -17,15 +17,14 @@ Key contributions:
 - Proposes a cross-modal hybrid aggregation network with a GNN backbone.
 - Demonstrates strong generalization on various unseen multimodal datasets.
 
-
-![Architecture Overview](assert/framework.jpg)
-
-
----
+<!-- 插入框架图，宽度设为500像素 -->
+<img src="assert/framework.jpg" alt="Framework Overview" width="500">
 
 
 
 ---
+
+
 
 ## 🔧 Installation
 
@@ -48,7 +47,8 @@ python test_xfeat_mifnet.py --mode ema-octa    # Run full MIFNet pipeline
 ```
 
 Example output:
-![Matching Result](assert/result.png)
+<!-- 插入框架图，宽度设为500像素 -->
+<img src="assert/result.png" alt="Matching Result" width="500">
 
 
 ---
