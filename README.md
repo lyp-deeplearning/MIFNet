@@ -17,10 +17,9 @@ Key contributions:
 - Proposes a cross-modal hybrid aggregation network with a GNN backbone.
 - Demonstrates strong generalization on various unseen multimodal datasets.
 
-> 📷 You may insert a teaser figure here using Markdown:
-> ```md
-> ![Architecture Overview](assert/framework.jpg)
-> ```
+
+![Architecture Overview](assert/framework.jpg)
+
 
 ---
 
@@ -31,7 +30,7 @@ Key contributions:
 ## 🔧 Installation
 
 ```bash
-conda create -n mifnet python=3.8
+conda create -n mifnet python=3.10
 conda activate mifnet
 pip install -r requirements.txt
 ```
@@ -49,9 +48,8 @@ python test_xfeat_mifnet.py --mode ema-octa    # Run full MIFNet pipeline
 ```
 
 Example output:
-```md
 ![Matching Result](assert/result.png)
-```
+
 
 ---
 
