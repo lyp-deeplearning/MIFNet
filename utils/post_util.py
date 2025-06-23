@@ -201,9 +201,7 @@ def descriptor_cross(sp_result, sd_result):
     fea["image_size"] = torch.from_numpy(np.array([768, 768])).unsqueeze(0).to(torch.float32).cuda()
     return fea 
 
-"""
-lightglue的后处理代码
-"""
+
 import matplotlib.cm as cm
 def post_lg_glue(query_keypoints, refer_keypoints,  sg_predict):
     query = np.float32([pt.pt for pt in query_keypoints])

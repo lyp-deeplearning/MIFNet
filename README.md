@@ -42,8 +42,7 @@ You can run testing using the provided script. The output matching visualization
 
 ```bash
 cd scripts
-python test_xfeat_mifnet.py --mode cf-fa       # Run baseline xfeat inference
-python test_xfeat_mifnet.py --mode ema-octa    # Run full MIFNet pipeline
+python test_xfeat_mifnet.py --mode cf-fa       # cf-fa, cf-oct, ema-octa, opt-sar, opt-nir
 ```
 
 Example output:
