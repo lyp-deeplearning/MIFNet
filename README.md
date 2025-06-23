@@ -21,10 +21,7 @@ Key contributions:
 <img src="assert/framework.jpg" alt="Framework Overview" width="500">
 
 
-
 ---
-
-
 
 ## 🔧 Installation
 
@@ -33,6 +30,23 @@ conda create -n mifnet python=3.10
 conda activate mifnet
 pip install -r requirements.txt
 ```
+
+You can download our released pretrained MIFNet models from the following link:
+
+👉 [Pretrained Checkpoints (drop box)](https://www.dropbox.com/scl/fo/y9sriuno6xi9axuhb184c/AMR6jdKuOh_fZoI-r8rU2u4?rlkey=bh6ufuj2o9kms252cugiy1ub9&st=6bxu4pd8&dl=0)  
+Please place the downloaded files under the `checkpoints/` directory.
+
+You also need to download the pretrained **Stable Diffusion v2.1** model. Use the following command to download it from Hugging Face:
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download(repo_id="stabilityai/stable-diffusion-2-1", local_dir="./stable-diffusion-2-1/")
+```
+After downloading, move the entire folder to:
+diffusion_weight/
+└── stable-diffusion-2-1/
+
 
 ---
 
@@ -53,11 +67,21 @@ Example output:
 ---
 
 ## 🏋️‍♂️ Training
+Please organize your training data under the data/ directory with the following structure:
+data/
+└── retina/
+    ├── Auxilliary_Training/      # Contains image pairs for auxiliary training
+    └── retina_aux.txt            # List of training image pairs
+- Auxilliary_Training/ contains the actual training image files. You can download from [Retina Dataset](https://github.com/SaharAlmahfouzNasser/MeDAL-Retina).
+- retina_aux.txt contains the file list (image pair paths) used during training， example : Auxilliary_Training/1184.png.
 
-Training code will be released soon. The training pipeline includes:
-- Keypoint and descriptor supervision
-- Semantic window relation distillation (Stable Diffusion)
-- Cross-triplet descriptor loss
+
+To train MIFNet, first navigate to the scripts directory and execute the training script:
+```bash
+cd scripts
+sh train.sh
+```
+This will start the training process and generate an output/ directory to store model checkpoints and training logs.
 
 ---
 

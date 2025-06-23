@@ -159,8 +159,10 @@ class TwoViewPipeline(BaseModel):
         return {**losses, "total": total}, metrics
 
 import sys
-sys.path.append("/home/yepeng_liu/code_python/third_repos/dift/")
-from src.models.dift_sd import SDFeaturizer4Eval
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+# sys.path.append("/home/yepeng_liu/code_python/third_repos/dift/")
+from third_party.dift.src.models.dift_sd import SDFeaturizer4Eval
 from PIL import Image
 
 class sd_feature_extractor:

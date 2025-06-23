@@ -2,4 +2,6 @@
 __pycache__/
 third_party/dift/diffusion_weight
 checkpoints/*.tar
+checkpoints/*.pth
 data/
+outputs/

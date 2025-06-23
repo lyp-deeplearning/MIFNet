@@ -16,7 +16,6 @@ from ..utils.metrics import matcher_metrics
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
 
-#from .gmm_pytorch import GaussianMixture
 
 FLASH_AVAILABLE = hasattr(F, "scaled_dot_product_attention")
 
@@ -63,7 +62,7 @@ class LearnableFourierPositionalEncoding(nn.Module):
         emb = torch.stack([cosines, sines], 0).unsqueeze(-3)
         return emb.repeat_interleave(2, dim=-1)
 
-#用来评估特征描述子的置信度
+
 class TokenConfidence(nn.Module):
     def __init__(self, dim: int) -> None:
         super().__init__()
@@ -300,7 +299,7 @@ def sigmoid_log_double_softmax(
     scores[:, -1, :-1] = F.logsigmoid(-z1.squeeze(-1))
     return scores
 
-# 计算描述子之间的匹配分数，包含两个线性层matchability，finalproject
+
 class MatchAssignment(nn.Module):
     def __init__(self, dim: int) -> None:
         super().__init__()
@@ -376,143 +375,19 @@ class input_proj_seman(nn.Module):
             x = layer(x)
         return x
 
-##################### dino feature reproject
-class input_proj_seman_dino(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_seman_dino, self).__init__()
-        self.layers = nn.ModuleList([nn.Linear(768, 640, bias=True),\
-                                     nn.ReLU(),\
-                                     nn.Linear(640, 480, bias=True), \
-                                     nn.ReLU(),\
-                                     nn.Linear(480, conf.descriptor_dim, bias=True),\
-                                     nn.ReLU()])
-
-    def forward(self, x):
-        # 顺序通过所有层
-        for layer in self.layers:
-            x = layer(x)
-        return x
-
-class input_proj_seman2(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_seman2, self).__init__()
-        self.layers = nn.ModuleList([nn.Linear(640, 320, bias=True),\
-                                     nn.ReLU(),\
-                                     nn.Linear(320, 256, bias=True), \
-                                     nn.ReLU(),\
-                                     nn.Linear(256, conf.descriptor_dim, bias=True),\
-                                     nn.ReLU()])
-
-    def forward(self, x):
-        # 顺序通过所有层
-        for layer in self.layers:
-            x = layer(x)
-        return x
-
-class input_proj_seman3(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_seman3, self).__init__()
-        self.layers = nn.ModuleList([nn.Linear(320, 256, bias=True),\
-                                     nn.ReLU(),\
-                                     nn.Linear(256, conf.descriptor_dim, bias=True),\
-                                     nn.ReLU()])
-
-    def forward(self, x):
-        # 顺序通过所有层
-        for layer in self.layers:
-            x = layer(x)
-        return x
-    
-# 再加入一个非线性层作为combine输入的语义特征和几何特征的layer
-class input_proj_combine(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_combine, self).__init__()
-        self.layers = nn.ModuleList([nn.Linear(512, 256, bias=True),\
-                                                nn.ReLU(),
-                                               ])
-    def forward(self, x):
-        # 顺序通过所有层
-        for layer in self.layers:
-            x = layer(x)
-        return x
-
-
-
-class input_proj_relu(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_relu, self).__init__()
-        # 使用 nn.ModuleList 管理全连接层
-        self.layers = nn.ModuleList([nn.Linear(conf.input_dim, 768, bias=True),\
-                                                nn.ReLU(),
-                                                nn.Linear(768, 480, bias=True), \
-                                                nn.ReLU(),
-                                                nn.Linear(480, conf.descriptor_dim, bias=True),\
-                                                nn.ReLU()])
-
-    def forward(self, x):
-        # x 是已经拼接好的特征
-        for layer in self.layers:
-            x = layer(x)
-        return x
-
-class input_proj_relu_bn(nn.Module):
-    def __init__(self, conf):
-        super(input_proj_relu_bn, self).__init__()
-        # 使用 nn.ModuleList 管理全连接层
-        self.layers = nn.ModuleList([nn.Linear(conf.input_dim, 768, bias=True),\
-                                                nn.BatchNorm1d(512),\
-                                                nn.ReLU(),\
-                                                nn.Linear(768, 480, bias=True), \
-                                                nn.BatchNorm1d(512),\
-                                                nn.ReLU(),\
-                                                nn.Linear(480, conf.descriptor_dim, bias=True),\
-                                                nn.BatchNorm1d(512),\
-                                                nn.ReLU()])
-
-    def forward(self, x):
-        # x 是已经拼接好的特征
-        for layer in self.layers:
-            x = layer(x)
-        return x
-    
-class FeatureFusionModule(nn.Module):
-    def __init__(self):
-        super(FeatureFusionModule, self).__init__()
-        # 用于降维特征b的线性层
-        self.reduce_dim_b = nn.Linear(1300, 256)
-        
-        # 管理网络层的ModuleList，这里可能不需要额外的层，除非你想进一步处理融合后的特征
-        self.layers = nn.ModuleList([
-            nn.ReLU()  # 假设在加和后你想应用非线性激活
-        ])
-    
-    def forward(self, feature_a, feature_b):
-        # 降维特征b
-        reduced_feature_b = self.reduce_dim_b(feature_b)
-        # 元素加和特征a和降维后的特征b
-        combined_features = feature_a + reduced_feature_b
-        # 通过额外的网络层处理
-        for layer in self.layers:
-            combined_features = layer(combined_features)
-        return combined_features
-    
-# 层数n_layers默认设置的是10 ，现在改称4测试一下精度会下降多少
-class LightGlue(nn.Module):
+  
+class MIFNet(nn.Module):
     default_conf = {
-        "name": "lightglue",  # just for interfacing
+        "name": "mifnet",  # just for interfacing
         "input_dim": 256,  # input descriptor dimension (autoselected from weights)
-        "add_scale_ori": False,
         "descriptor_dim": 256,
+        "add_scale_ori": False,
         "n_layers": 10,
         "num_heads": 4,
-        "flash": False,  # enable FlashAttention if available.
+        "flash": True,  # enable FlashAttention if available.
         "mp": False,  # enable mixed precision
-        "depth_confidence": -1,  # early stopping, disable with -1
-        "width_confidence": -1,  # point pruning, disable with -1
-        "filter_threshold": 0.0,  # match threshold
-        "checkpointed": False,
-        "weights": None,  # either a path or the name of pretrained weights (disk, ...)
-        "weights_from_version": "v0.1_arxiv",
+        "filter_threshold": 0.1,  # match threshold
+        "weights": None,
         "loss": {
             "gamma": 1.0,
             "fn": "nll",
@@ -522,7 +397,7 @@ class LightGlue(nn.Module):
 
     required_data_keys = ["keypoints0", "keypoints1", "descriptors0", "descriptors1"]
 
-    url = "https://github.com/cvg/LightGlue/releases/download/{}/{}_lightglue.pth"
+   
 
     def __init__(self, conf) -> None:
         super().__init__()
@@ -540,9 +415,7 @@ class LightGlue(nn.Module):
 
         h, n, d = conf.num_heads, conf.n_layers, conf.descriptor_dim
 
-        # self.transformers = nn.ModuleList(
-        #     [TransformerLayer(d, h, conf.flash) for _ in range(n)]
-        # )
+    
         trans_list = []
         for index in range(n):
             if (index == 0):
@@ -638,10 +511,6 @@ class LightGlue(nn.Module):
         sem0 = data["relation0"].contiguous()
         sem1 = data["relation1"].contiguous()
         
-        # sem_label0 = data["sem_label0"].contiguous() # [4, 512]
-        # sem_label1 = data["sem_label1"].contiguous() # [4, 512]
-        # sem_center0 = data["sem_center0"].contiguous() # [4, 5, 256]
-        # sem_center1 = data["sem_center1"].contiguous() # [4, 5, 256]
         assert desc0.shape[-1] == self.conf.input_dim
         assert desc1.shape[-1] == self.conf.input_dim
         if torch.is_autocast_enabled():
@@ -658,25 +527,13 @@ class LightGlue(nn.Module):
         encoding1 = self.posenc(kpts1)
 
         # GNN + final_proj + assignment
-        do_early_stop = self.conf.depth_confidence > 0 and not self.training
-        do_point_pruning = self.conf.width_confidence > 0 and not self.training
-
         all_desc0, all_desc1 = [], []
-
-        if do_point_pruning:
-            ind0 = torch.arange(0, m, device=device)[None]
-            ind1 = torch.arange(0, n, device=device)[None]
-            # We store the index of the layer at which pruning is detected.
-            prune0 = torch.ones_like(ind0)
-            prune1 = torch.ones_like(ind1)
         token0, token1 = None, None
         for i in range(self.conf.n_layers):
             ## diffmatch
             if self.conf.checkpointed and self.training:
                 if (i == 0):
                     sem0, sem1 = checkpoint(self.transformers[i],sem0, sem1, encoding0, encoding1)
-                    # labels:[512, ], centers_a : [5,256]
-                    #sem_check_bool = self._get_sample_num(sem0, 10) & self._get_sample_num(sem1, 10)
                     sem_label0, sem_center0 = self.get_sklearn_gmm(sem0, 5)
                     sem_label1, sem_center1 = self.get_sklearn_gmm(sem1, 5)
                     intra_loss_0, inter_loss_0 = self.compute_intra_inter_loss(sem_label0, \
@@ -708,87 +565,19 @@ class LightGlue(nn.Module):
                 else:
                     desc0, desc1 = self.transformers[i](desc0, desc1, encoding0, encoding1)
             
-            ## diff_a, only_sem
-            # if self.conf.checkpointed and self.training:
-            #     if (i == 0):
-            #         sem0, sem1 = checkpoint(self.transformers[i],sem0, sem1, encoding0, encoding1)
-            #         desc0 = sem0 
-            #         desc1 = sem1
-            #     else:
-            #         desc0, desc1 = checkpoint(self.transformers[i],desc0, desc1, encoding0, encoding1)
-            # else:
-            #     if (i == 0):
-            #         sem0, sem1 = self.transformers[i](sem0, sem1, encoding0, encoding1)
-            #         desc0 = sem0 
-            #         desc1 = sem1 
-            #     else:
-            #         desc0, desc1 = self.transformers[i](desc0, desc1, encoding0, encoding1)
-            ## diff_b, only sem+geo
-            # if self.conf.checkpointed and self.training:
-            #     if (i == 0):
-            #         desc0 = sem0 + geo0
-            #         desc1 = sem1 + geo1
-            #         desc0, desc1 = checkpoint(self.transformers[i],desc0, desc1, encoding0, encoding1)
-            #     else:
-            #         desc0, desc1 = checkpoint(self.transformers[i],desc0, desc1, encoding0, encoding1)
-            # else:
-            #     if (i == 0):
-            #         desc0 = sem0 + geo0
-            #         desc1 = sem1 + geo1
-            #         desc0, desc1 = self.transformers[i](desc0, desc1, encoding0, encoding1)
-            #     else:
-            #         desc0, desc1 = self.transformers[i](desc0, desc1, encoding0, encoding1)
-            
-            # 每一层的描述子变量都被存储下来了
+           
             if self.training or i == self.conf.n_layers - 1:
                 all_desc0.append(desc0)
                 all_desc1.append(desc1)
                 continue  # no early stopping or adaptive width at last layer
 
-            # only for eval
-            if do_early_stop:
-                assert b == 1
-                token0, token1 = self.token_confidence[i](desc0, desc1)
-                if self.check_if_stop(token0[..., :m, :], token1[..., :n, :], i, m + n):
-                    break
-            if do_point_pruning:
-                assert b == 1
-                scores0 = self.log_assignment[i].get_matchability(desc0) #描述子1的每层的匹配分数
-                prunemask0 = self.get_pruning_mask(token0, scores0, i) #根据classify得分和匹配分数决定是否要删除
-                keep0 = torch.where(prunemask0)[1] #找出需要保存的特征点的索引
-                ind0 = ind0.index_select(1, keep0) # 只保留未被删除的id
-                desc0 = desc0.index_select(1, keep0) # 新的描述子
-                encoding0 = encoding0.index_select(-2, keep0) # 新的位置编码
-                prune0[:, ind0] += 1 # 记录哪一层发生剪枝
-                scores1 = self.log_assignment[i].get_matchability(desc1)
-                prunemask1 = self.get_pruning_mask(token1, scores1, i)
-                keep1 = torch.where(prunemask1)[1]
-                ind1 = ind1.index_select(1, keep1)
-                desc1 = desc1.index_select(1, keep1)
-                encoding1 = encoding1.index_select(-2, keep1)
-                prune1[:, ind1] += 1
         desc0, desc1 = desc0[..., :m, :], desc1[..., :n, :]
         scores, _ = self.log_assignment[i](desc0, desc1)
         m0, m1, mscores0, mscores1 = filter_matches(scores, self.conf.filter_threshold)
         # 根据point pruning的信息去更新匹配矩阵的信息，重新得到match对
-        if do_point_pruning:
-            #创建全为 -1 的填充匹配索引矩阵
-            m0_ = torch.full((b, m), -1, device=m0.device, dtype=m0.dtype)
-            m1_ = torch.full((b, n), -1, device=m1.device, dtype=m1.dtype)
-            #根据剪枝后的索引 ind0 和 ind1 更新 m0_ 和 m1_
-            m0_[:, ind0] = torch.where(m0 == -1, -1, ind1.gather(1, m0.clamp(min=0)))
-            m1_[:, ind1] = torch.where(m1 == -1, -1, ind0.gather(1, m1.clamp(min=0)))
-            #创建全为 0 的填充匹配分数矩阵
-            mscores0_ = torch.zeros((b, m), device=mscores0.device)
-            mscores1_ = torch.zeros((b, n), device=mscores1.device)
-            #根据剪枝后的索引更新匹配分数矩阵
-            mscores0_[:, ind0] = mscores0
-            mscores1_[:, ind1] = mscores1
-            #使用填充后的匹配索引和分数矩阵更新 m0, m1, mscores0, mscores1
-            m0, m1, mscores0, mscores1 = m0_, m1_, mscores0_, mscores1_
-        else:
-            prune0 = torch.ones_like(mscores0) * self.conf.n_layers
-            prune1 = torch.ones_like(mscores1) * self.conf.n_layers
+        
+        prune0 = torch.ones_like(mscores0) * self.conf.n_layers
+        prune1 = torch.ones_like(mscores1) * self.conf.n_layers
 
         pred = {
             "matches0": m0,
@@ -1016,4 +805,4 @@ class LightGlue(nn.Module):
         return losses, metrics
 
 
-__main_model__ = LightGlue
+__main_model__ = MIFNet

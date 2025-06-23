@@ -20,22 +20,20 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from . import __module_name__, logger
-from .datasets import get_dataset
-from .eval import run_benchmark
-from .models import get_model
-from .settings import EVAL_PATH, TRAINING_PATH
-from .utils.experiments import get_best_checkpoint, get_last_checkpoint, save_experiment
-from .utils.stdout_capturing import capture_outputs
-from .utils.tensor import batch_to_device
-from .utils.tools import (
-    AverageMetric,
-    MedianMetric,
-    PRMetric,
-    RecallMetric,
-    fork_rng,
-    set_seed,
-)
+
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+from training import __module_name__, logger
+from training.datasets import get_dataset
+from training.eval import run_benchmark
+from training.models import get_model
+from training.settings import EVAL_PATH, TRAINING_PATH
+from training.utils.experiments import (get_best_checkpoint,get_last_checkpoint,save_experiment)
+from training.utils.stdout_capturing import capture_outputs
+from training.utils.tensor import batch_to_device
+from training.utils.tools import (AverageMetric, MedianMetric, PRMetric, RecallMetric, fork_rng, set_seed)  
+
 
 # @TODO: Fix pbar pollution in logs
 # @TODO: add plotting during evaluation
@@ -298,10 +296,12 @@ def training(rank, conf, output_dir, args):
     if init_cp is not None:
         model.load_state_dict(init_cp["model"], strict=False)
 
-    # 直接加载训练好的模型
+   
     load_direct = True
     if load_direct:
-        checkpoint = torch.load("/home/yepeng_liu/code_python/157_beifen/awesome-detector/glue-factory-main/pretrain_weight/superpoint_lightglue.pth")
+        import os
+        ckpt_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../',  'checkpoints', "superpoint_lightglue.pth"))
+        checkpoint = torch.load(ckpt_path)
         
         for i in range(9):
                 pattern = f"self_attn.{i}", f"matcher.transformers.{i}.self_attn"

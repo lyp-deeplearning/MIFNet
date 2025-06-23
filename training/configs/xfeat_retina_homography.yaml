@@ -26,7 +26,7 @@ model:
         th_positive: 3
         th_negative: 3
     matcher:
-        name: matchers.lightglue
+        name: matchers.mifnet
         filter_threshold: 0.1
         flash: false
         checkpointed: true
