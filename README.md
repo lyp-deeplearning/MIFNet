@@ -44,8 +44,11 @@ from huggingface_hub import snapshot_download
 snapshot_download(repo_id="stabilityai/stable-diffusion-2-1", local_dir="./stable-diffusion-2-1/")
 ```
 After downloading, move the entire folder to:
+```
 diffusion_weight/
 └── stable-diffusion-2-1/
+```
+
 
 
 ---
@@ -68,10 +71,13 @@ Example output:
 
 ## 🏋️‍♂️ Training
 Please organize your training data under the data/ directory with the following structure:
+```
 data/
 └── retina/
     ├── Auxilliary_Training/      # Contains image pairs for auxiliary training
     └── retina_aux.txt            # List of training image pairs
+```
+
 - Auxilliary_Training/ contains the actual training image files. You can download from [Retina Dataset](https://github.com/SaharAlmahfouzNasser/MeDAL-Retina).
 - retina_aux.txt contains the file list (image pair paths) used during training， example : Auxilliary_Training/1184.png.
 
